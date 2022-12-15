@@ -1,22 +1,45 @@
 #include <SPI.h>
-#include <pwmWrite.h>
+#include <LedRGB.h>
+#include <ESP32Servo.h>
 
-#define SERVO_PIN 33 // ESP32 pin GIOP26 connected to servo motor
+const int TURRET_PIN = 33; // ESP32 pin GIOP26 connected to servo motor
+const int BUTTON_PIN = 32;
+
+const int RED_LED_PIN = 27;
+const int GREEN_LED_PIN = 26;
+const int BLUE_LED_PIN = 25;
 
 int pos = 0;
-Pwm pwm = Pwm();
+Servo turrent;
+
+LedRGB statusLED(RED_LED_PIN, GREEN_LED_PIN, BLUE_LED_PIN, 1);
 
 void setup(void) {
   Serial.begin(9600); // For debug
+
+  turrent.attach(TURRET_PIN); // attaches the servo on pin 18 to the servo object
+
+  pinMode(BUTTON_PIN, INPUT);
+
+  pinMode(BLUE_LED_PIN, OUTPUT);
+  centerTurret();
 }
 
 void loop() {
-  for (pos = 0; pos <= 180; pos++) {  // go from 0-180 degrees
-    pwm.writeServo(SERVO_PIN, pos);    // set the servo position (degrees)
-    delay(25);
+  bool buttonIsPressed = digitalRead(BUTTON_PIN);
+
+  digitalWrite(BLUE_LED_PIN, true);
+
+  Serial.println(buttonIsPressed);
+  if (buttonIsPressed) {  // go from 0-180 degrees
+    statusLED.defaultColor("yellow");
+    //turrent.write(pos);    // set the servo position (degrees)
+  }else{
+    statusLED.defaultColor("white");
+    //centerTurret();
   }
-  for (pos = 180; pos >= 0; pos--) {  // go from 180-0 degrees
-    pwm.writeServo(SERVO_PIN, pos);    // set the servo position (degrees)
-    delay(25);
-  }
+}
+
+void centerTurret(){
+  turrent.write(90); // Set turrent to center
 }
