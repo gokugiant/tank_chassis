@@ -1,45 +1,31 @@
-#include <SPI.h>
+#include "Turret.h"
+#include "Wiring.h"
+#include "Move.h"
 #include <LedRGB.h>
-#include <ESP32Servo.h>
-
-const int TURRET_PIN = 33; // ESP32 pin GIOP26 connected to servo motor
-const int BUTTON_PIN = 32;
-
-const int RED_LED_PIN = 27;
-const int GREEN_LED_PIN = 26;
-const int BLUE_LED_PIN = 25;
 
 int pos = 0;
-Servo turrent;
-
 LedRGB statusLED(RED_LED_PIN, GREEN_LED_PIN, BLUE_LED_PIN, 1);
+Turret turret(TURRET_PIN);
+Move move(L29N_LEFT_ENABLE, L29N_RIGHT_ENABLE, L29N_INPUT_1, L29N_INPUT_2, L29N_INPUT_3, L29N_INPUT_4);
 
 void setup(void) {
   Serial.begin(9600); // For debug
 
-  turrent.attach(TURRET_PIN); // attaches the servo on pin 18 to the servo object
-
   pinMode(BUTTON_PIN, INPUT);
-
   pinMode(BLUE_LED_PIN, OUTPUT);
-  centerTurret();
+
+  turret.turnToDegree(0);
 }
 
 void loop() {
   bool buttonIsPressed = digitalRead(BUTTON_PIN);
 
-  digitalWrite(BLUE_LED_PIN, true);
-
-  Serial.println(buttonIsPressed);
   if (buttonIsPressed) {  // go from 0-180 degrees
-    statusLED.defaultColor("yellow");
-    //turrent.write(pos);    // set the servo position (degrees)
-  }else{
-    statusLED.defaultColor("white");
-    //centerTurret();
+    delay(100);
+    pos += 90;
+    if(pos > 180) pos = 0;
+    Serial.println(pos);
+    //statusLED.defaultColor("yellow");
+    turret.turnToDegree(pos);    // set the servo position (degrees)
   }
-}
-
-void centerTurret(){
-  turrent.write(90); // Set turrent to center
 }
