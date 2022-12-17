@@ -15,17 +15,27 @@ void setup(void) {
   pinMode(BLUE_LED_PIN, OUTPUT);
 
   turret.turnToDegree(0);
+  statusLED.off();
 }
 
 void loop() {
   bool buttonIsPressed = digitalRead(BUTTON_PIN);
 
   if (buttonIsPressed) {  // go from 0-180 degrees
-    delay(100);
-    pos += 90;
-    if(pos > 180) pos = 0;
+    pos += 1;
+    if(pos > 2) {pos = 0; statusLED.off();}
     Serial.println(pos);
-    //statusLED.defaultColor("yellow");
+    statusLED.add(10, 10, 10);
     turret.turnToDegree(pos);    // set the servo position (degrees)
+    delay(500);
+    if(pos ==1){
+      move.forward(100);
+      Serial.println("Forward"); 
+    }else if(pos==2){
+      move.backward(100);
+      Serial.println("Backward"); 
+    }else{
+      move.stop();
+    }
   }
 }
