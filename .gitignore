@@ -1,0 +1,7 @@
+.pio/
+**/.pio/
+**/backups/
+.DS_Store
+
+# Local editor settings
+**/.vscode/
