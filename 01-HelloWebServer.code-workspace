@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "name": "01-HelloWebServer",
+      "path": "WebControl/examples/01_HelloWebServer"
+    }
+  ],
+  "settings": {
+    "platformio-ide.autoOpenPlatformIOIniFile": true
+  }
+}

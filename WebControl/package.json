@@ -1,0 +1,11 @@
+{
+  "name": "tank-webcontrol-formatting",
+  "private": true,
+  "scripts": {
+    "format:web": "node tools/format-webpage.mjs",
+    "format:docs": "prettier --write \"*.md\""
+  },
+  "devDependencies": {
+    "prettier": "3.9.10"
+  }
+}

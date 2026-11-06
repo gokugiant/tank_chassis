@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "name": "02-TankWebControl",
+      "path": "WebControl"
+    }
+  ],
+  "settings": {
+    "platformio-ide.autoOpenPlatformIOIniFile": true
+  }
+}
