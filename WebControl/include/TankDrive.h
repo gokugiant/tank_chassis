@@ -17,11 +17,15 @@ public:
   bool backward(int speed);
   bool turnLeft(int speed);
   bool turnRight(int speed);
+  // Diagonale Fahrt: aeussere Kette 100 %, innere 50 % (Minimum beachten).
+  bool curve(bool forward, bool left);
   void stop();
+  // Browser-Frist weiterreichen: lokale Regelschritte duerfen den Watchdog nicht verlaengern.
+  bool differential(int left, int right, uint32_t commandAt) { return setTracks(left, right, commandAt); }
   DriveState state();
 
 private:
-  bool setTracks(int left, int right);
+  bool setTracks(int left, int right, uint32_t commandAt);
   void stopLocked();
   static void timerCallback(void* context);
   void checkTimeout();

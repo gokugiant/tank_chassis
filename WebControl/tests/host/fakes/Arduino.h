@@ -22,10 +22,13 @@ inline int digitalRead(int p) {
 inline void pinMode(int, int) {
 }
 
-inline void ledcSetup(int, int, int) {
+inline double ledcSetup(int, int frequency, int) {
+  return frequency;
 }
 
-inline void ledcAttachPin(int, int) {
+inline int pwmAttachedPins[16] = {};
+inline void ledcAttachPin(int pin, int channel) {
+  pwmAttachedPins[channel] = pin;
 }
 
 inline void ledcWrite(int channel, int v) {

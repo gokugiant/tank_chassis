@@ -1,33 +1,44 @@
-# Testnachweis
+# Validierungsstand
 
-Am 5. November 2026 am angeschlossenen Fahrzeug durchgeführt. Keine automatische Positions- oder Drehzahlmessung vorhanden.
+Stand: **8. November 2026**. Aktive Firmware: `WebControl/`.
 
-| Prüfung | Nachweis / Ergebnis |
-| --- | --- |
-| USB/Chip | Serielle Verbindung; Flashwerkzeug erkennt ESP32-D0WDQ6 Rev. 1.0 |
-| Firmware | Build und Upload erfolgreich; Flash-Prüfsummen bestätigt |
-| Startzustand | Serielle Antwort `v4 active=0 next=1 button=0` nach Stopp/Reset der Testfolge |
-| RGB | Besitzer bestätigt Rot, Grün und Blau einzeln |
-| Display und RGB | Besitzer bestätigt Ampelanzeige mit synchronem Taster-Farbwechsel unter PinTest |
-| Vier Motortests | Besitzer bestätigt nach Korrektur links vor/zurück und rechts vor/zurück passend zur Anzeige |
-| Displayorientierung | Besitzer bestätigt Rotation0 und Hochformat als richtig |
-| Impulsabschaltung | ESP-Timer im Code, serielle Stoppmeldungen; Besitzer bestätigt die Testfolge, Zeit nicht mit Messgerät geprüft |
-| Tasterstopp während Bewegung | Implementiert, nicht ausdrücklich als eigener Hardwaretest bestätigt |
-| Servo | deaktiviert; keine Prüfung |
+## Aktueller Befund
 
-## Maßgeblicher Schlussbefund
+Die neueste Firmware wurde erfolgreich gebaut und hochgeladen, Flash-Hashes
+verifiziert. Implementiert sind neue Vorderseite, TFT-Rotation2, Kurvenpad und
+±360° zusätzlich zur Messwertanzeige, Kalibrierung, Geradeauskorrektur und
+Dreh-Feinkorrektur. Softwaretests bestehen.
 
-Besitzer: „ok jetzt funktioniert es genau richtig so. beide ketten machen genau was das display zeigt.“ Dies bestätigt die korrigierte v4-Firmware. Frühere kurze Tests mit Zucken und widersprüchlichen Links-/Richtungsangaben werden nicht als finale Zuordnung verwendet.
+**Sensor aktuell nicht erreichbar:** Nach dem letzten Upload sowie einem Neustart
+meldete die I²C-Suche an SDA33/SCL32 `devices=0`. Zuvor BMI160 an 0x68 mit 0xD1 und
+gültigen Messwerten bestätigt. Sensorpins unverändert. Deshalb ist die neueste
+Winkel-/Drehsteuerung derzeit nicht physisch prüfbar.
 
-Die Webcamaufnahme bestätigte eine kurze Bewegung der oberen/linken Kette, ließ die Richtung ohne Markierung jedoch nicht zuverlässig bestimmen. Maßgeblich für die Richtungen ist der abschließende Vier-Schritte-Test des Besitzers.
+## Evidenzgrenzen
 
-## Offene Prüfungen
+| Bereich                                                            | Stand                                                                                         |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| RGB, ursprünglicher Display-/Tastertest, einzelne Kettenrichtungen | Besitzer bestätigt; historischer Test vom 5. November                                         |
+| Webseite und Sensoranzeige                                         | Besitzer bestätigt funktionsfähig                                                             |
+| Relative Winkelrichtung                                            | Besitzer: Nase nach links ergibt etwa +90°                                                    |
+| Geradeauskorrektur / Mindest-PWM                                   | Besitzer bestätigt grundsätzlich gut; unter 50 % zu schwach                                   |
+| Frühere Kipperkennung                                              | Fehlalarm beim Anfahren gemeldet, gefilterte Prüfung ergänzt                                  |
+| Drehungen mit höherer PWM                                          | Besitzer bestätigt gut, bemerkt einige Grad Nachlauf                                          |
+| Neueste Nachlauf-/Feinkorrektur                                    | Modelltests bestanden; reale Genauigkeit nicht bestätigt                                      |
+| Neue Vorderseite, TFT-Rotation2, Kurven, ±360°                     | Host-/Browserlogiktests und Build bestanden; physischer Test offen                            |
+| Aktueller Sensor                                                   | Keine Antwort; Verbindung wiederherstellen                                                    |
+| Servo                                                              | Nominelle Winkel/Signale implementiert; mechanische Grenzen/Mitte nicht vollständig validiert |
+| Abbruch bei Netzwerk-/Sensorfehlern                                | Im Code und in Logiktests geprüft; kein vollständiger realer Abbruch-Testnachweis             |
 
-- Lastbetrieb auf dem Boden, Mindest-PWM, Drehzahl und Fahrgeschwindigkeit.
-- Thermik und Stromaufnahme bei längerer Belastung.
-- Elektrischer Versorgungspfad, Jumper, Reset-/Bootverhalten bei verschiedenen Einschaltreihenfolgen.
-- Eigener Test des vorzeitigen Tasterstopps.
-- Exakte Boardrevision und Widerstandswerte.
-- Netzwerksteuerung samt Befehls-Timeout und Verbindungsabbruch; noch nicht implementiert.
+Hosttests prüfen Hardwareklassen, PWM-/Stoppgrenzen, Zeitüberläufe, Sensorumrechnung,
+Kalibrierung, Winkelintegration und Navigation mit einfachen Trägheitsmodellen.
+Browserlogiktests nutzen nachgebildetes DOM/HTTP; sie ersetzen keine echte Browser-
+oder Funkprüfung. Kein Joystick implementiert, keine Positions-/Wegdrehzahlmessung.
 
-Originaler Flash vor der ersten Änderung lokal gesichert; Wiederherstellung nicht getestet. Keine Sensorik für gemessene Geschwindigkeit, Position oder Batteriespannung.
+- [Ausführlicher Implementierungs- und Testverlauf](../WebControl/VALIDATION.md)
+- [Wiedereinstieg](START_HERE.md)
+- [Originaler Vier-Schritte-Test vom 5. November](archive/validation-2026-11-05.md)
+
+Bei Softwarearbeiten wurden keine autonomen Bewegungsbefehle vom Agenten gesendet.
+Mechanische Genauigkeit, Nachlaufparameter, Stromversorgung und thermische
+Dauerbelastung bleiben am realen Fahrzeug zu prüfen.

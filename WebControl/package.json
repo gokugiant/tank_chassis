@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "format:web": "node tools/format-webpage.mjs",
-    "format:docs": "prettier --write \"*.md\""
+    "format:docs": "prettier --write \"*.md\"",
+    "test:web": "node tests/web/navigation_test.cjs"
   },
   "devDependencies": {
     "prettier": "3.9.10"

@@ -3,11 +3,17 @@
 #include "TankDrive.h"
 #include "RgbLed.h"
 #include "Button.h"
+#include "Turret.h"
+#include "MotionSensor.h"
+#include "Heading.h"
+#include "Navigation.h"
 
 class TankWebServer {
 public:
-  TankWebServer(TankDrive& drive, RgbLed& led, Button& button)
-      : drive_(drive), led_(led), button_(button) {
+  TankWebServer(TankDrive& drive, RgbLed& led, Button& button, Turret& turret, MotionSensor& motion,
+                Heading& heading, Navigation& navigation)
+      : drive_(drive), led_(led), button_(button), turret_(turret), motion_(motion),
+        heading_(heading), navigation_(navigation) {
   }
 
   bool begin();
@@ -29,6 +35,10 @@ private:
   TankDrive& drive_;
   RgbLed& led_;
   Button& button_;
+  Turret& turret_;
+  MotionSensor& motion_;
+  Heading& heading_;
+  Navigation& navigation_;
   String owner_;
   int lastSequence_ = 0;
 };

@@ -1,61 +1,101 @@
 # ESP32 Tank Chassis
 
-Kettenfahrzeug mit TTGO/LILYGO T-Display, L298N, zwei DC-Motoren, externem Taster und RGB-LED. Lernplattform für **Eingebettete Systeme – All in with KI**.
+Kettenfahrzeug mit TTGO/LILYGO T-Display, L298N, RGB-LED, Taster, Servo und BMI160.
+Lernplattform für **Eingebettete Systeme – All in with KI**.
 
-## Aktueller Stand
+## Aktueller Stand – 8. November 2026
 
-**Die Firmware unter [`MotorTest/`](MotorTest/) ist aufgespielt und am Fahrzeug bestätigt.** Nach Korrektur der linken Fahrtrichtung und Displayrotation hat der Besitzer am 5. November 2026 bestätigt: Beide Ketten führen genau die auf dem Display angezeigten Richtungen aus; die Displayausrichtung passt.
+**Die aktuelle Firmware liegt in [`WebControl/`](WebControl/) und ist aufgespielt.**
+Sie hostet die Steuerseite im WLAN **Tank-Lab** unter **http://192.168.4.1**
+(Demo-Passwort: `TankLab2026`). Kein Internet nötig.
 
-- Vier Einzeltests per Taster: links vorwärts, links rückwärts, rechts vorwärts, rechts rückwärts.
-- Jeder Test endet nach 750 ms bei PWM128/255 (ca. 50 %) automatisch.
-- Display zeigt aktive Kette, Richtungspfeil, Testnummer, nächsten Schritt und Stoppzustand.
-- RGB: Rot bei Stopp, Blau während des Tests. Einzelne RGB-Farben wurden zuvor bestätigt.
-- Start im Stillstand; keine Wiederholung durch gehaltenen Taster.
-- Servo ist deaktiviert und nicht angeschlossen.
-- WLAN/Webserver sind noch nicht implementiert.
+- Bisheriges Heck ist die neue Vorderseite (`Config::FrontReversed=true`), TFT um 180° gedreht.
+- Acht Fahrtasten: vor/zurück, Drehen auf der Stelle und vier Kurvenrichtungen.
+- Motor-PWM 50–100 %, STOPP 0 %. Kurven fahren fest mit 100 % außen / 50 % innen.
+- BMI160-Messwerte, Stillstandskalibrierung und relativer Drehwinkel auf Display/Webseite.
+- Zuschaltbare Geradeauskorrektur sowie relative ±90°/±180°/±360°-Drehungen.
+- Vorausschauendes Abschalten, Stillstandsmessung und kurze Feinkorrekturimpulse;
+  nach erfolgreicher Drehung bleibt die Freigabe erhalten. ±1° ist das Software-Zielfenster,
+  keine garantierte absolute mechanische Genauigkeit.
+- Start gesperrt. Taster/STOPP & SPERREN und Fehler brechen Aktionen ab.
+  Browserbefehle müssen spätestens alle 500 ms erneuert werden.
+- RGB- und nominelle Servo-Sollwinkelsteuerung bleiben gekapselt.
+
+**Aktuell offen:** Nach dem letzten Upload antwortet der Sensor nicht mehr:
+I²C-Suche an SDA33/SCL32 findet kein Gerät (`devices=0`). Zuvor wurde der BMI160
+an `0x68` mit Chipkennung `0xD1` erkannt und lieferte gültige Werte. Sensorpins sind
+unverändert. Automatische Winkelaktionen sind ohne gültigen, kalibrierten Sensor
+nicht verfügbar. Die neue Vorderseite, Displayausrichtung, Kurven und 360°-Fahrt
+sind gebaut und getestet, aber noch nicht vom Besitzer am Fahrzeug bestätigt.
+
+Der Besitzer bestätigte zuvor funktionierende Sensoranzeige, Geradeauskorrektur
+und die ausreichende Leistung ab 50 %. Reale Nachlauf-/Genauigkeitsabstimmung der
+neuesten Drehregelung steht noch aus. Ein virtueller Joystick ist optional geplant.
 
 ## Einstieg
 
-1. Projekt in VS Code mit PlatformIO öffnen; **`MotorTest` als Projektordner** wählen, da dort die `platformio.ini` liegt.
-2. Motorversorgung zunächst ausgeschaltet lassen. USB verbinden.
-3. In `MotorTest/` bauen und bei Bedarf aufspielen:
+1. [`02-TankWebControl.code-workspace`](02-TankWebControl.code-workspace) in VS Code öffnen.
+2. In PlatformIO die Umgebung **tank_webcontrol** wählen. Nur eine andere `.ini`
+   anzuklicken wechselt das aktive Projekt nicht zuverlässig.
+3. Bauen bzw. bei Bedarf aufspielen (Motorversorgung für den Upload ausgeschaltet):
 
 ```sh
+cd WebControl
 pio run
 pio run -t upload --upload-port /dev/cu.usbserial-01E5F16A
 pio device monitor --baud 115200 --port /dev/cu.usbserial-01E5F16A
 ```
 
-Der Port ist der im Test verwendete macOS-Port und kann auf einem anderen Rechner abweichen. Seriellen Monitor vor Upload schließen. Nach dem Upload beginnt die Folge bei Schritt 1.
+Der USB-Port ist gerätespezifisch. Monitor vor Upload schließen.
+Danach WLAN Tank-Lab verbinden, Seite neu laden, im Stillstand kalibrieren und erst
+für einen bewussten Fahrversuch freigeben. Die Webseite erklärt die Bedienung.
+USB ersetzt die externe Motorversorgung nicht.
 
-4. Für Motorversuche Chassis stabil aufbocken, beide Ketten frei halten und geeignete externe Motorversorgung anschließen. Im bestätigten Aufbau wurde eine 12-V-Quelle verwendet. Finger von Ketten und Rollen fernhalten.
-5. Taster einmal drücken, Bewegung und Anzeige vergleichen, automatischen Stopp abwarten, dann nächster Schritt. Ein weiterer Druck während der Bewegung stoppt vorzeitig.
-
-Die Prüfung erfolgte mit frei drehenden Ketten. Lastbetrieb, Fahrgeschwindigkeit, Mindest-PWM und thermische Dauerbelastung sind nicht validiert. Taster und Timer sind Softwarefunktionen; Pegel während Reset/Boot und die Stromversorgung sind davon nicht abgesichert. USB dient nicht als Motorversorgung.
+Für das minimale Vorlesungsbeispiel stattdessen
+[`01-HelloWebServer.code-workspace`](01-HelloWebServer.code-workspace) öffnen und
+**hello_webserver** wählen. Dieses Beispiel ist ein eigenständiges Projekt.
 
 ## Dokumentation
 
-- [Bestätigte Hardware, Pinbelegung und Richtungen](docs/HARDWARE.md)
-- [Bedienung des aktuellen Tastertests](MotorTest/README.md)
-- [Testnachweis und offene Prüfungen](docs/VALIDATION.md)
-- [Nächste Schritte für die Vorlesung](docs/TEACHING.md)
-- [RGB-/Displaytest ohne Motorsteuerung](PinTest/README.md)
+- [Wiedereinstieg und offener Sensorfehler](docs/START_HERE.md)
+- [Aktuelle Hardware/Pinbelegung](docs/HARDWARE.md)
+- [Bedienung, Klassen, Routen und Reglerparameter](WebControl/README.md)
+- [Aktueller Validierungsstand und Verlauf](WebControl/VALIDATION.md)
+- [Vorlesungsablauf](docs/TEACHING.md), [Code-Erklärung](WebControl/LESSON.md)
+- [Präsentation als PowerPoint und PDF](Presentation/README.md)
+- [Historischer Vier-Schritte-Motortest vom 5. November](docs/archive/validation-2026-11-05.md)
 
 ## Projektstruktur
 
-| Ordner | Zweck |
-| --- | --- |
-| `MotorTest/` | Aktuelle, am Fahrzeug bestätigte Testfirmware mit PlatformIO-Konfiguration |
-| `PinTest/` | Separater RGB-/Displaytest; Taster schaltet Rot → Grün → Blau, Motoren bleiben aus |
-| `MotorTest/legacy/` | Alte serielle Testversion v3; wird nicht mitgebaut |
-| `Tank/` | Ursprünglicher Arduino-Sketch, unverändert und mit bekannten Fehlern; nicht als aktuellen Stand flashen |
-| `Two wheeler/` | Historisches Beispiel für anderen Aufbau |
-| `docs/archive/` | Ursprüngliche Analyse und vorläufige Testnotizen, kein aktueller Verdrahtungsplan |
+| Ordner                  | Zweck                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `WebControl/`           | Aktuelle modulare Steuerfirmware, Tests und Lehrbeispiele                    |
+| `Presentation/`         | Vorlesungsfolien als PPTX/PDF, älterer Hardwarestand gekennzeichnet          |
+| `MotorTest/`            | Historisch bestätigter Vier-Schritte-Test mit damaliger Vorderseite/Belegung |
+| `PinTest/`              | Historischer RGB-/Displaytest mit damaliger Tasterbelegung                   |
+| `Tank/`, `Two wheeler/` | Ursprüngliche/historische Sketche, nicht die aktuelle Firmware               |
+| `docs/archive/`         | Frühe Hardwarebefunde und Testprotokolle                                     |
 
-Der alte `Tank/`-Code hat vertauschte Enable-Bezeichnungen, unvollständige PWM-/Drehfunktionen und keine Display-/Netzwerksteuerung. Die funktionierende neue Implementierung liegt separat in `MotorTest/`.
+Historische Testprojekte nicht ungeprüft mit der heutigen Verdrahtung verwenden:
+Taster war an GPIO32, heute ist dort Sensor-SCL; Taster ist jetzt GPIO36.
 
-## Build und lokale Sicherung
+## Prüfen und Formatieren
 
-Festgelegt: PlatformIO-Plattform **espressif32 6.10.0**, Arduino-Framework aus dieser Plattform, **TFT_eSPI 2.5.43**. Das Framework verwendet Arduino-ESP32 2.x; eine spätere 3.x-Portierung erfordert eine LEDC-Anpassung. Displayeinstellungen liegen projektlokal in `platformio.ini`.
+```sh
+sh WebControl/tests/host/run.sh
+cd WebControl
+npm ci
+npm run test:web
+npm run format:web
+pio run
+```
 
-Vor dem ersten Flash wurde der ursprüngliche 4-MiB-Flash lokal unter `PinTest/backups/original-2026-11-05.bin` gesichert. Backups und Buildausgaben werden von Git ausgeschlossen. Die Sicherung ist kein Bestandteil des Repositorys und ihre Wiederherstellung wurde nicht getestet.
+Host- und Browserlogiktests ersetzen keine Prüfung der Mechanik, Elektrik oder
+Netzwerkabbrüche am echten Fahrzeug. Genauer Stand: [VALIDATION.md](WebControl/VALIDATION.md).
+
+PlatformIO **espressif32 6.10.0**, Arduino-ESP32 2.x, **TFT_eSPI 2.5.43**.
+Anwendungs-Pins in `WebControl/include/Pins.h`, Display-Signale zusätzlich als
+Buildflags in `WebControl/platformio.ini`, Fahrgrenzen in `Config.h`.
+
+Originaler Flash lokal unter `PinTest/backups/original-2026-11-05.bin` gesichert;
+Backups, Buildausgaben und node_modules sind ausgeschlossen. Wiederherstellung nicht getestet.

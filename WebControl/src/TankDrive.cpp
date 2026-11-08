@@ -61,37 +61,58 @@ void TankDrive::stop() {
   xSemaphoreGive(mutex_);
 }
 
-bool TankDrive::setTracks(int left, int right) {
+bool TankDrive::setTracks(int left, int right, uint32_t commandAt) {
   xSemaphoreTake(mutex_, portMAX_DELAY);
   if (!state_.armed) {
     xSemaphoreGive(mutex_);
     return false;
   }
-  left = constrain(left, -Config::MaxSpeed, Config::MaxSpeed);
-  right = constrain(right, -Config::MaxSpeed, Config::MaxSpeed);
+  if (uint32_t(millis() - commandAt) >= Config::CommandTimeoutMs) {
+    stopLocked();
+    state_.armed = false;
+    xSemaphoreGive(mutex_);
+    return false;
+  }
+  // 0 bleibt STOPP. Jeder laufende Motor bekommt mindestens MinSpeed.
+  auto usablePwm = [](int value) {
+    value = constrain(value, -Config::MaxSpeed, Config::MaxSpeed);
+    if (value > 0 && value < Config::MinSpeed)
+      return Config::MinSpeed;
+    if (value < 0 && value > -Config::MinSpeed)
+      return -Config::MinSpeed;
+    return value;
+  };
+  left = usablePwm(left);
+  right = usablePwm(right);
   track(LeftChannel, Pins::LeftForward, Pins::LeftBackward, left);
   track(RightChannel, Pins::RightForward, Pins::RightBackward, right);
   state_.left = left;
   state_.right = right;
-  lastCommand_ = millis();
+  lastCommand_ = commandAt;
   xSemaphoreGive(mutex_);
   return true;
 }
 
 bool TankDrive::forward(int speed) {
-  return setTracks(speed, speed);
+  return setTracks(speed, speed, millis());
 }
 
 bool TankDrive::backward(int speed) {
-  return setTracks(-speed, -speed);
+  return setTracks(-speed, -speed, millis());
 }
 
 bool TankDrive::turnLeft(int speed) {
-  return setTracks(-speed, speed);
+  return setTracks(-speed, speed, millis());
 }
 
 bool TankDrive::turnRight(int speed) {
-  return setTracks(speed, -speed);
+  return setTracks(speed, -speed, millis());
+}
+
+bool TankDrive::curve(bool forward, bool left) {
+  const int sign = forward ? 1 : -1;
+  const int outer = Config::MaxSpeed, inner = Config::MaxSpeed / 2;
+  return setTracks(sign * (left ? inner : outer), sign * (left ? outer : inner), millis());
 }
 
 DriveState TankDrive::state() {

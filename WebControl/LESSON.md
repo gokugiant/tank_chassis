@@ -1,5 +1,8 @@
 # Lehrablauf: vom Browser zum GPIO
 
+Aktuelle Belegung und offene Hardwarefragen: [Wiedereinstieg](../docs/START_HERE.md).
+Fahr-PWM heute 50–100 % (0 = STOPP); historische Folien können ältere Werte zeigen.
+
 ## 1. Wo läuft was?
 
 ```text
@@ -35,7 +38,7 @@ led.setColor(255, 0, 128);
 led.off();
 ```
 
-Die Anwendung braucht dafür keine GPIO-Nummern zu kennen. Dasselbe Prinzip gilt für `drive.forward(40)` und `button.wasPressed()`. `setup()` initialisiert, `loop()` verarbeitet Ereignisse. Ein gehaltener Taster soll als genau ein Druck zählen.
+Die Anwendung braucht dafür keine GPIO-Nummern zu kennen. Dasselbe Prinzip gilt für `drive.forward(60)` und `button.wasPressed()`. `setup()` initialisiert, `loop()` verarbeitet Ereignisse. Ein gehaltener Taster soll als genau ein Druck zählen.
 
 ## 4. Eine Route ruft die Klasse auf
 
